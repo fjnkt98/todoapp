@@ -3,7 +3,6 @@ import Link from 'next/link';
 import Head from 'next/head';
 import { Pages } from '../types/pages';
 import { Todo } from '../types/todo';
-import 'isomorphic-fetch';
 
 const pages: Pages = {
   index: { title: 'All Todos', fetchQuery: '' },
@@ -26,7 +25,10 @@ export default function Todos({ page }: { page: string }) {
     fetch(`/api/todos${fetchQuery}`).then(async (res) =>
       res.ok ? setTodos(await res.json()) : alert(await res.text())
     );
-  }, [page]);
+  }, [fetchQuery, page]);
+
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  const inputTextRef = React.useRef<HTMLInputElement>(null!);
 
   return (
     <>
@@ -34,6 +36,28 @@ export default function Todos({ page }: { page: string }) {
         <title>{title}</title>
       </Head>
       <h1>{title}</h1>
+      <label>
+        Enter new Todo item
+        <input ref={inputTextRef} type="text" />
+        <button
+          onClick={() => {
+            fetch('/api/todos', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ title: inputTextRef.current.value }),
+            }).then(() => {
+              fetch(`/api/todos${fetchQuery}`).then(async (res) => {
+                res.ok ? setTodos(await res.json()) : alert(await res.text());
+                inputTextRef.current.value = '';
+              });
+            });
+          }}
+        >
+          Submit
+        </button>
+      </label>
 
       <ul>
         {todos.map(({ id, title, completed }) => (
