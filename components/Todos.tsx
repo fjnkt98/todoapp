@@ -36,31 +36,31 @@ export default function Todos({ page }: { page: string }) {
         <title>{title}</title>
       </Head>
       <h1>{title}</h1>
-      <label>
-        Add new Todo <input ref={inputTextRef} type="text" />
-        <button
-          onClick={async () => {
-            const result: Response = await fetch('/api/todos', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ title: inputTextRef.current.value }),
-            });
+      <form
+        onSubmit={async () => {
+          const result: Response = await fetch('/api/todos', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ title: inputTextRef.current.value }),
+          });
 
-            if (result.status === 201) {
-              fetch(`/api/todos${fetchQuery}`).then(async (res: Response) => {
-                res.ok ? setTodos(await res.json()) : alert(await res.text());
-                inputTextRef.current.value = '';
-              });
-            } else {
-              alert(await result.text());
-            }
-          }}
-        >
-          Submit
-        </button>
-      </label>
+          if (result.status === 201) {
+            fetch(`/api/todos${fetchQuery}`).then(async (res: Response) => {
+              res.ok ? setTodos(await res.json()) : alert(await res.text());
+              inputTextRef.current.value = '';
+            });
+          } else {
+            alert(await result.text());
+          }
+        }}
+      >
+        <label>
+          Add new Todo <input ref={inputTextRef} type="text" />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
 
       <ul>
         {todos.map(({ id, title, completed }) => (
