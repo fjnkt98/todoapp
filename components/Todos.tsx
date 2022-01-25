@@ -37,22 +37,26 @@ export default function Todos({ page }: { page: string }) {
       </Head>
       <h1>{title}</h1>
       <label>
-        Enter new Todo item
+        Add new Todo
         <input ref={inputTextRef} type="text" />
         <button
-          onClick={() => {
-            fetch('/api/todos', {
+          onClick={async () => {
+            const result: Response = await fetch('/api/todos', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({ title: inputTextRef.current.value }),
-            }).then(() => {
-              fetch(`/api/todos${fetchQuery}`).then(async (res) => {
+            });
+
+            if (result.status === 201) {
+              fetch(`/api/todos${fetchQuery}`).then(async (res: Response) => {
                 res.ok ? setTodos(await res.json()) : alert(await res.text());
                 inputTextRef.current.value = '';
               });
-            });
+            } else {
+              alert(await result.text());
+            }
           }}
         >
           Submit

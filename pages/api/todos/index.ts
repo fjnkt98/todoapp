@@ -2,24 +2,26 @@
 import { Todo } from '../../../types/todo';
 import { HttpException } from '../../../types/http-exception';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { PrismaClient } from '@prisma/client';
 
-const todos: Todo[] = [
-  { id: 1, title: 'hoge', completed: false },
-  { id: 2, title: 'moge', completed: true },
-];
+const prisma = new PrismaClient();
 
-let id = 2;
-
-export default (req: NextApiRequest, res: NextApiResponse) => {
+export default async (req: NextApiRequest, res: NextApiResponse) => {
   switch (req.method) {
     case 'GET':
       {
         if (!req.query.completed) {
+          const todos: Todo[] = await prisma.todo.findMany();
           return res.json(todos);
         }
 
-        const completed = req.query.completed === 'true';
-        res.json(todos.filter((todo) => todo.completed === completed));
+        const completed: boolean = req.query.completed === 'true';
+        const todos: Todo[] = await prisma.todo.findMany({
+          where: {
+            completed: completed,
+          },
+        });
+        res.json(todos);
       }
       break;
 
@@ -32,8 +34,12 @@ export default (req: NextApiRequest, res: NextApiResponse) => {
           throw err;
         }
 
-        const todo: Todo = { id: (id += 1), title, completed: false };
-        todos.push(todo);
+        const todo = await prisma.todo.create({
+          data: {
+            title: title,
+            completed: false,
+          },
+        });
 
         res.status(201).json(todo);
       }
