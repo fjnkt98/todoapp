@@ -1,6 +1,6 @@
 /* eslint-disable import/no-anonymous-default-export */
-import { Todo } from '../../types/todo';
-import { HttpException } from '../../types/http-exception';
+import { Todo } from '../../../types/todo';
+import { HttpException } from '../../../types/http-exception';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 const todos: Todo[] = [
