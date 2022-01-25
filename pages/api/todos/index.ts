@@ -2,16 +2,21 @@
 import { Todo } from '../../../types/todo';
 import { HttpException } from '../../../types/http-exception';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../../../lib/prisma';
 
-const prisma = new PrismaClient();
-
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   switch (req.method) {
     case 'GET':
       {
         if (!req.query.completed) {
-          const todos: Todo[] = await prisma.todo.findMany();
+          const todos: Todo[] = await prisma.todo.findMany({
+            orderBy: {
+              id: 'desc',
+            },
+          });
           return res.json(todos);
         }
 
@@ -20,6 +25,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           where: {
             completed: completed,
           },
+          orderBy: [
+            {
+              id: 'desc',
+            },
+          ],
         });
         res.json(todos);
       }
@@ -48,4 +58,4 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     default:
       break;
   }
-};
+}

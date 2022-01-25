@@ -37,8 +37,7 @@ export default function Todos({ page }: { page: string }) {
       </Head>
       <h1>{title}</h1>
       <label>
-        Add new Todo
-        <input ref={inputTextRef} type="text" />
+        Add new Todo <input ref={inputTextRef} type="text" />
         <button
           onClick={async () => {
             const result: Response = await fetch('/api/todos', {
@@ -66,9 +65,39 @@ export default function Todos({ page }: { page: string }) {
       <ul>
         {todos.map(({ id, title, completed }) => (
           <li key={id}>
-            <span style={completed ? { textDecoration: 'line-through' } : {}}>
+            <label style={completed ? { textDecoration: 'line-through' } : {}}>
+              <input
+                type="checkbox"
+                checked={completed}
+                onChange={() => {
+                  fetch(`/api/todos/${id}`, {
+                    method: 'PUT',
+                  }).then(() => {
+                    fetch(`/api/todos${fetchQuery}`).then(async (res) =>
+                      res.ok
+                        ? setTodos(await res.json())
+                        : alert(await res.text())
+                    );
+                  });
+                }}
+              />
               {title}
-            </span>
+            </label>
+            <button
+              onClick={() => {
+                fetch(`/api/todos/${id}`, {
+                  method: 'DELETE',
+                }).then(() => {
+                  fetch(`/api/todos${fetchQuery}`).then(async (res) =>
+                    res.ok
+                      ? setTodos(await res.json())
+                      : alert(await res.text())
+                  );
+                });
+              }}
+            >
+              DELETE
+            </button>
           </li>
         ))}
       </ul>
