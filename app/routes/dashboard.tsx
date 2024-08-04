@@ -1,7 +1,6 @@
-import { Link, useLoaderData } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
-
+import { Form, Link, useLoaderData } from "@remix-run/react";
+import { json, redirect } from "@remix-run/cloudflare";
 import { createSupabaseServerClient } from "~/supabase.server";
 
 export const loader = async ({ request, context }: LoaderFunctionArgs) => {
@@ -9,29 +8,28 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     request,
     context
   );
-
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
 
+  if (user == null) {
+    return redirect("/sign-in", { headers });
+  }
+
   return json({ user }, { headers });
 };
 
-export default function Index() {
+export default function Dashboard() {
   const { user } = useLoaderData<typeof loader>();
 
   return (
     <div>
-      {user == null ? (
-        <div className="flex flex-col">
-          <Link to="/sign-in">Sign in</Link>
-        </div>
-      ) : (
-        <p>Welcome, {user.id}</p>
-      )}
-      <div>
-        <Link to="/dashboard">Dashboard</Link>
-      </div>
+      <h1>Dashboard</h1>
+      <p>Welcome, {user.id}</p>
+      <Form action="/sign-out" method="post">
+        <button type="submit">Sign Out</button>
+      </Form>
+      <Link to="/">return to top</Link>
     </div>
   );
 }
