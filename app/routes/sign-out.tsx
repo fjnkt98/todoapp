@@ -1,9 +1,9 @@
 import { redirect } from "@remix-run/cloudflare";
-import type { ActionFunctionArgs } from "@remix-run/cloudflare";
+import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
 
 import { createSupabaseServerClient } from "~/supabase.server";
 
-export const action = async ({ request, context }: ActionFunctionArgs) => {
+export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const { supabaseClient, headers } = createSupabaseServerClient(
     request,
     context
@@ -13,10 +13,12 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
     data: { user },
   } = await supabaseClient.auth.getUser();
 
+  // 未サインインユーザのアクセスならそのままトップページに飛ばす
   if (!user) {
     return redirect("/", { headers });
   }
 
+  // サインアウトしてトップページに飛ばす
   await supabaseClient.auth.signOut();
   return redirect("/", { headers });
 };

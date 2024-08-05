@@ -1,5 +1,4 @@
 import { json, redirect } from "@remix-run/cloudflare";
-import { Link } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
 
 import { createSupabaseServerClient } from "~/supabase.server";
@@ -14,23 +13,24 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     data: { user },
   } = await supabaseClient.auth.getUser();
 
-  const isSignedIn = user != null;
-
-  if (isSignedIn) {
-    redirect("/dashboard", { headers });
+  if (user != null) {
+    redirect("/", { headers });
   }
-  return json({ isSignedIn }, { headers });
+
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    provider: "github",
+    options: {
+      redirectTo: `${context.cloudflare.env.SITE_DOMAIN}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    return json({ error }, { headers });
+  }
+
+  return redirect(data.url, { headers });
 };
 
 export default function SignIn() {
-  return (
-    <div className="flex flex-col items-center justify-center">
-      <Link
-        to="/sign-in/github"
-        className="px-3 py-2 bg-blue-500 rounded-lg text-white my-10"
-      >
-        GitHubでサインイン
-      </Link>
-    </div>
-  );
+  return <div>Log in with GitHub</div>;
 }

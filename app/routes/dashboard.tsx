@@ -1,5 +1,4 @@
 import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { Form, Link, useLoaderData } from "@remix-run/react";
 import { json, redirect } from "@remix-run/cloudflare";
 import { createSupabaseServerClient } from "~/supabase.server";
 
@@ -16,20 +15,9 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     return redirect("/sign-in", { headers });
   }
 
-  return json({ user }, { headers });
+  return json(null, { headers });
 };
 
 export default function Dashboard() {
-  const { user } = useLoaderData<typeof loader>();
-
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      <p>Welcome, {user.id}</p>
-      <Form action="/sign-out" method="post">
-        <button type="submit">Sign Out</button>
-      </Form>
-      <Link to="/">return to top</Link>
-    </div>
-  );
+  return <div></div>;
 }

@@ -1,6 +1,6 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link } from "@remix-run/react";
 import type { LoaderFunctionArgs } from "@remix-run/cloudflare";
-import { json } from "@remix-run/cloudflare";
+import { json, redirect } from "@remix-run/cloudflare";
 
 import { createSupabaseServerClient } from "~/supabase.server";
 
@@ -14,23 +14,28 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     data: { user },
   } = await supabaseClient.auth.getUser();
 
-  return json({ user }, { headers });
+  if (user == null) {
+    // 未ログインユーザにはトップページを表示する
+    return json(null, { headers });
+  } else {
+    // ログイン済みなら直接dashboardに飛ばす
+    return redirect("/dashboard", { headers });
+  }
 };
 
 export default function Index() {
-  const { user } = useLoaderData<typeof loader>();
-
   return (
     <div>
-      {user == null ? (
-        <div className="flex flex-col">
-          <Link to="/sign-in">Sign in</Link>
-        </div>
-      ) : (
-        <p>Welcome, {user.id}</p>
-      )}
-      <div>
-        <Link to="/dashboard">Dashboard</Link>
+      <div className="flex flex-col items-center justify-center">
+        <p className="text-xl font-sans my-10 text-balance px-4 text-center">
+          Todo App powered by Remix + supabase
+        </p>
+        <Link
+          to="/sign-in"
+          className="px-3 py-2 bg-blue-500 rounded-lg text-white"
+        >
+          サインイン
+        </Link>
       </div>
     </div>
   );
