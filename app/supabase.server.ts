@@ -18,31 +18,6 @@ export const createSupabaseServerClient = (
       auth: {
         detectSessionInUrl: true,
         flowType: "pkce",
-        // storage: {
-        //   getItem: (key: string) => {
-        //     const cookies = parseCookieHeader(
-        //       request.headers.get("Cookie") ?? ""
-        //     );
-        //     const cookie = cookies.find((e) => e.name == key);
-        //     return cookie?.value ?? null;
-        //   },
-        //   setItem: (key: string, value: string) => {
-        //     headers.append("Set-Cookie", serializeCookieHeader(key, value, {}));
-        //   },
-        //   removeItem: (key: string) => {
-        //     const cookies = parseCookieHeader(
-        //       request.headers.get("Cookie") ?? ""
-        //     );
-        //     cookies
-        //       .filter((c) => c.name !== key)
-        //       .forEach(({ name, value }) =>
-        //         headers.append(
-        //           "Set-Cookie",
-        //           serializeCookieHeader(name, value, {})
-        //         )
-        //       );
-        //   },
-        // },
       },
       cookies: {
         getAll() {
