@@ -4,6 +4,7 @@ import {
   parseCookieHeader,
   serializeCookieHeader,
 } from "@supabase/ssr";
+import type { Database } from "~/database.types";
 
 export const createSupabaseServerClient = (
   request: Request,
@@ -11,7 +12,7 @@ export const createSupabaseServerClient = (
 ) => {
   const headers = new Headers();
 
-  const supabaseClient = createServerClient(
+  const supabaseClient = createServerClient<Database>(
     context.cloudflare.env.SUPABASE_URL!,
     context.cloudflare.env.SUPABASE_ANON_KEY!,
     {
