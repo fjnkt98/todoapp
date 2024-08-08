@@ -15,8 +15,8 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   if (code) {
     const { error } = await supabaseClient.auth.exchangeCodeForSession(code);
 
-    if (!error) {
-      throw redirect(next, { headers, status: 500 });
+    if (error == null) {
+      return redirect(next, { headers });
     }
   }
 
