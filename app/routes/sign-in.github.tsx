@@ -25,7 +25,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   });
 
   if (error) {
-    return json({ error }, { headers });
+    throw json({ error }, { headers, status: 500 });
   }
 
   return redirect(data.url, { headers });
