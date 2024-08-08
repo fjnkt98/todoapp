@@ -18,8 +18,8 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
     // 未ログインユーザにはトップページを表示する
     return json(null, { headers });
   } else {
-    // ログイン済みなら直接dashboardに飛ばす
-    return redirect("/dashboard", { headers });
+    // ログイン済みなら直接tasksに飛ばす
+    return redirect("/tasks", { headers });
   }
 };
 

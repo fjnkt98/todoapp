@@ -17,7 +17,7 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   const isSignedIn = user != null;
 
   if (isSignedIn) {
-    redirect("/dashboard", { headers });
+    redirect("/tasks", { headers });
   }
   return json({ isSignedIn }, { headers });
 };
