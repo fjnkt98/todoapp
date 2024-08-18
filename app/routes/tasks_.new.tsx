@@ -1,7 +1,7 @@
 import { redirect } from "@remix-run/cloudflare";
 import type { ActionFunctionArgs } from "@remix-run/cloudflare";
 import { createSupabaseServerClient } from "~/supabase.server";
-import { Form, useNavigate } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 
 export const action = async ({ request, context }: ActionFunctionArgs) => {
   const { supabaseClient, headers } = createSupabaseServerClient(
@@ -28,29 +28,23 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
   const status = formData.get("status")?.toString();
   const deadline = formData.get("deadline")?.toString();
 
-  const { data, error } = await supabaseClient
-    .from("tasks")
-    .insert({
-      title,
-      description,
-      status,
-      deadline,
-    })
-    .select("id");
+  const { error } = await supabaseClient.from("tasks").insert({
+    title,
+    description,
+    status,
+    deadline,
+    user_id: user.id,
+  });
 
   if (error) {
     console.log(error);
     throw new Response("failed to insert task", { headers, status: 500 });
   }
 
-  const id = data[0].id;
-
-  return redirect(`/tasks/${id}`, { headers, status: 201 });
+  return redirect(`/tasks`, { headers });
 };
 
 export default function NewTask() {
-  const navigate = useNavigate();
-
   return (
     <Form method="post">
       <p>
@@ -79,7 +73,7 @@ export default function NewTask() {
         <input type="datetime-local" name="deadline" />
       </p>
       <p>
-        <button onClick={() => navigate(-1)}>キャンセル</button>
+        <Link to="/tasks">キャンセル</Link>
         <button type="submit">作成</button>
       </p>
     </Form>
