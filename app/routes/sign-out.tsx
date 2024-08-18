@@ -22,3 +22,11 @@ export const loader = async ({ request, context }: LoaderFunctionArgs) => {
   await supabaseClient.auth.signOut();
   return redirect("/", { headers });
 };
+
+export default function SignOut() {
+  return (
+    <div>
+      <h1>Signing out...</h1>
+    </div>
+  );
+}

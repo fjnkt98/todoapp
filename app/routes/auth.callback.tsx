@@ -23,3 +23,11 @@ export async function loader({ request, context }: LoaderFunctionArgs) {
   // return the user to an error page with instructions
   return redirect("/auth/auth-code-error", { headers });
 }
+
+export default function AuthCallback() {
+  return (
+    <div>
+      <h1>Redirect soon...</h1>
+    </div>
+  );
+}
