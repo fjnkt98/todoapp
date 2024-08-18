@@ -30,7 +30,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="min-w-80">
         <div className="pl-3 pt-2 pb-1 bg-blue-500 text-white">
           <h1 className="text-xl font-sans">
             <Link to="/">ToDo App</Link>

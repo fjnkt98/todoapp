@@ -46,36 +46,72 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
 
 export default function NewTask() {
   return (
-    <Form method="post">
-      <p>
-        <span>タイトル</span>
-        <input
-          placeholder="タイトル"
-          aria-label="title"
-          name="title"
-          type="text"
-        />
-      </p>
-      <p>
-        <span>説明</span>
-        <textarea name="description" rows={6} />
-      </p>
-      <p>
-        <span>状態</span>
-        <select name="status" defaultValue={"not started"}>
-          <option value="not started">未対応</option>
-          <option value="wip">対応中</option>
-          <option value="done">対応済</option>
-        </select>
-      </p>
-      <p>
-        <span>締切</span>
-        <input type="datetime-local" name="deadline" />
-      </p>
-      <p>
-        <Link to="/tasks">キャンセル</Link>
-        <button type="submit">作成</button>
-      </p>
-    </Form>
+    <div className="px-1 py-2 sm:px-4 lg:px-6">
+      <Form method="post">
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">
+            タイトル:
+            <input
+              type="text"
+              name="title"
+              className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            ></input>
+          </label>
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">
+            説明:
+            <textarea
+              name="description"
+              rows={4}
+              className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            ></textarea>
+          </label>
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">
+            状態:
+            <select
+              name="status"
+              className="w-full px-2 py-1 appearance-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+              defaultValue={"not started"}
+            >
+              <option value="not started">未対応</option>
+              <option value="wip">対応中</option>
+              <option value="done">対応済</option>
+            </select>
+          </label>
+        </div>
+        <div>
+          <label className="block text-gray-700 font-medium mb-2">
+            締切:
+            <input
+              type="datetime-local"
+              name="deadline"
+              className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            ></input>
+          </label>
+        </div>
+
+        <div className="flex flex-row justify-between items-center my-5">
+          <Link
+            to="/tasks"
+            className="px-2 py-1 border border-gray-500 rounded-md"
+          >
+            キャンセル
+          </Link>
+          <button
+            type="submit"
+            className="px-6 py-1 border bg-blue-500 text-white rounded-md border-blue-900"
+          >
+            作成
+          </button>
+        </div>
+      </Form>
+    </div>
   );
 }
