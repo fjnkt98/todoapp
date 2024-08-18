@@ -1,33 +1,75 @@
-import { redirect } from "@remix-run/cloudflare";
-import type { ActionFunctionArgs } from "@remix-run/cloudflare";
+import { redirect, json } from "@remix-run/cloudflare";
+import type {
+  LoaderFunctionArgs,
+  ActionFunctionArgs,
+} from "@remix-run/cloudflare";
 import { createSupabaseServerClient } from "~/supabase.server";
-import { Form, Link } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import { getCurrentTimezoneOffset } from "./tasks_.new";
 
-export function getCurrentTimezoneOffset(): string {
-  const date = new Date();
-  const padZero = (value: number) =>
-    value < 10 ? "0" + value.toString() : value.toString();
+dayjs.extend(timezone);
+dayjs.extend(utc);
 
-  const timezoneOffset = -date.getTimezoneOffset();
-  const offsetSign = timezoneOffset >= 0 ? "+" : "-";
-  const offsetHours = padZero(Math.floor(Math.abs(timezoneOffset) / 60));
-  const offsetMinutes = padZero(Math.abs(timezoneOffset) % 60);
-
-  return `${offsetSign}${offsetHours}:${offsetMinutes}`;
-}
-
-export const action = async ({ request, context }: ActionFunctionArgs) => {
+export const loader = async ({
+  request,
+  context,
+  params,
+}: LoaderFunctionArgs) => {
   const { supabaseClient, headers } = createSupabaseServerClient(
     request,
     context
   );
-
   const {
     data: { user },
   } = await supabaseClient.auth.getUser();
-
   if (user == null) {
     return redirect("/sign-in", { headers });
+  }
+
+  const id = params.id;
+  if (id == undefined) {
+    throw new Response("Invalid path param", { headers, status: 404 });
+  }
+
+  const { data, error } = await supabaseClient
+    .from("tasks")
+    .select("id, title, description, status, deadline")
+    .eq("id", id);
+
+  if (error) {
+    console.log(error);
+    throw new Response("Failed to fetch the task", { headers, status: 500 });
+  }
+
+  if (data.length === 0) {
+    throw new Response("The task not found", { headers, status: 404 });
+  }
+
+  return json({ data: data[0] }, { headers });
+};
+
+export const action = async ({
+  request,
+  context,
+  params,
+}: ActionFunctionArgs) => {
+  const { supabaseClient, headers } = createSupabaseServerClient(
+    request,
+    context
+  );
+  const {
+    data: { user },
+  } = await supabaseClient.auth.getUser();
+  if (user == null) {
+    return redirect("/sign-in", { headers });
+  }
+
+  const id = params.id;
+  if (id == undefined) {
+    throw new Response("Invalid path param", { headers, status: 404 });
   }
 
   const formData = await request.formData();
@@ -46,23 +88,30 @@ export const action = async ({ request, context }: ActionFunctionArgs) => {
       ? null
       : naiveDeadline + timezone;
 
-  const { error } = await supabaseClient.from("tasks").insert({
-    title,
-    description,
-    status,
-    deadline,
-    user_id: user.id,
-  });
-
+  const { error } = await supabaseClient
+    .from("tasks")
+    .update({
+      title,
+      description,
+      status,
+      deadline,
+    })
+    .eq("id", id);
   if (error) {
     console.log(error);
-    throw new Response("failed to insert task", { headers, status: 500 });
+    throw new Response("Failed to update the task", { headers, status: 500 });
   }
 
-  return redirect(`/tasks`, { headers });
+  return redirect("/tasks", { headers });
 };
 
-export default function NewTask() {
+export default function Task() {
+  const { data } = useLoaderData<typeof loader>();
+  const deadline =
+    data.deadline == null
+      ? undefined
+      : dayjs(data.deadline).tz("Asia/Tokyo").format("YYYY-MM-DDTHH:mm");
+
   return (
     <div className="px-1 py-2 sm:px-4 lg:px-6">
       <Form method="post">
@@ -73,6 +122,7 @@ export default function NewTask() {
               type="text"
               name="title"
               className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              defaultValue={data.title}
               required
             ></input>
           </label>
@@ -84,6 +134,8 @@ export default function NewTask() {
               name="description"
               rows={4}
               className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              defaultValue={data.description ?? ""}
+              required
             ></textarea>
           </label>
         </div>
@@ -93,8 +145,8 @@ export default function NewTask() {
             <select
               name="status"
               className="w-full px-2 py-1 appearance-none border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              defaultValue={data.status}
               required
-              defaultValue={"not started"}
             >
               <option value="not started">未対応</option>
               <option value="wip">対応中</option>
@@ -109,6 +161,7 @@ export default function NewTask() {
               type="datetime-local"
               name="deadline"
               className="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              defaultValue={deadline}
             ></input>
           </label>
           <input
@@ -120,7 +173,7 @@ export default function NewTask() {
 
         <div className="flex flex-row justify-between items-center my-5">
           <Link
-            to="/tasks"
+            to={`/tasks/${data.id}`}
             className="px-2 py-1 border border-gray-500 rounded-md"
           >
             キャンセル
@@ -129,7 +182,7 @@ export default function NewTask() {
             type="submit"
             className="px-6 py-1 border bg-blue-500 text-white rounded-md border-blue-900"
           >
-            作成
+            保存
           </button>
         </div>
       </Form>
